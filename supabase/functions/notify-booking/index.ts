@@ -6,13 +6,24 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const FROM_EMAIL = "Co-Study Scheduler <onboarding@resend.dev>";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   try {
     const { bookingId } = await req.json();
 
     if (!bookingId) {
       return new Response(JSON.stringify({ error: "Missing bookingId" }), {
         status: 400,
+        headers: corsHeaders,
       });
     }
 
@@ -28,7 +39,7 @@ serve(async (req) => {
     if (bookingError || !booking) {
       return new Response(
         JSON.stringify({ error: "Booking not found" }),
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -148,11 +159,11 @@ serve(async (req) => {
 
     await Promise.all(emails);
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
   } catch (err) {
     return new Response(
       JSON.stringify({ error: err.message }),
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 });
