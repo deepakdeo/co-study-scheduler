@@ -16,6 +16,14 @@ import { toZonedTime, fromZonedTime } from 'date-fns-tz'
 export const getWeekRange = (weekOffset, hostTimezone) => {
   const nowInHostTz = toZonedTime(new Date(), hostTimezone)
   const baseDate = new Date(nowInHostTz)
+
+  // Auto-advance to next week on weekends (Sat=6, Sun=0)
+  const dayOfWeek = baseDate.getDay()
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    const daysUntilMonday = dayOfWeek === 0 ? 1 : 2
+    baseDate.setDate(baseDate.getDate() + daysUntilMonday)
+  }
+
   baseDate.setDate(baseDate.getDate() + weekOffset * 7)
 
   const start = startOfWeek(baseDate, { weekStartsOn: 1 }) // Monday
