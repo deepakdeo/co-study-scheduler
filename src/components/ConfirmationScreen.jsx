@@ -1,12 +1,53 @@
+import { useState } from 'react'
 import { format } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
+import { supabase } from '../lib/supabase'
 
-const ConfirmationScreen = ({ booking, room, viewerTimezone, onBack }) => {
+const ConfirmationScreen = ({ booking, room, viewerTimezone, onBack, onCancelled }) => {
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelled, setCancelled] = useState(false)
+
   const startInViewer = toZonedTime(new Date(booking.slot_start_utc), viewerTimezone)
   const endInViewer = toZonedTime(new Date(booking.slot_end_utc), viewerTimezone)
 
   const dateLabel = format(startInViewer, 'EEEE, MMMM d, yyyy')
   const timeLabel = `${format(startInViewer, 'h:mm a')} – ${format(endInViewer, 'h:mm a')}`
+
+  const handleCancel = async () => {
+    if (!confirm('Are you sure you want to cancel this booking?')) return
+
+    setCancelling(true)
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', booking.id)
+
+    if (error) {
+      alert('Failed to cancel: ' + error.message)
+      setCancelling(false)
+      return
+    }
+
+    setCancelled(true)
+    setCancelling(false)
+  }
+
+  if (cancelled) {
+    return (
+      <div className="mx-auto max-w-md rounded-xl bg-white p-8 text-center shadow-sm">
+        <h2 className="mb-2 text-xl font-bold text-gray-900">Booking Cancelled</h2>
+        <p className="mb-6 text-sm text-gray-600">
+          Your session on {dateLabel} has been cancelled. You can book a different slot.
+        </p>
+        <button
+          onClick={onCancelled}
+          className="rounded-lg bg-cobalt-600 px-6 py-2 text-sm font-semibold text-white hover:bg-cobalt-700"
+        >
+          Book a Different Slot
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-md rounded-xl bg-white p-8 text-center shadow-sm">
@@ -44,12 +85,21 @@ const ConfirmationScreen = ({ booking, room, viewerTimezone, onBack }) => {
         </ul>
       </div>
 
-      <button
-        onClick={onBack}
-        className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-      >
-        Back to Schedule
-      </button>
+      <div className="flex gap-3 justify-center">
+        <button
+          onClick={onBack}
+          className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Back to Schedule
+        </button>
+        <button
+          onClick={handleCancel}
+          disabled={cancelling}
+          className="rounded-lg border border-red-300 px-6 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+        >
+          {cancelling ? 'Cancelling...' : 'Cancel Booking'}
+        </button>
+      </div>
     </div>
   )
 }

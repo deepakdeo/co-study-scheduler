@@ -51,6 +51,11 @@ const Room = () => {
           setSelectedSlot(null)
           refetch()
         }}
+        onCancelled={() => {
+          setConfirmation(null)
+          setSelectedSlot(null)
+          refetch()
+        }}
       />
     )
   }
