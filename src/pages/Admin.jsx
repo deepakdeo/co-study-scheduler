@@ -23,7 +23,7 @@ const Admin = () => {
   const weekStart = weekDates[0]
   const weekEnd = weekDates[weekDates.length - 1]
 
-  const { bookings, loading: bookingsLoading } = useBookings(room?.id, weekStart, weekEnd)
+  const { bookings, loading: bookingsLoading, refetch } = useBookings(room?.id, weekStart, weekEnd)
 
   const handleVerify = async (pin, setError) => {
     // Fetch the room with admin_pin check via a Supabase RPC or direct comparison
@@ -51,6 +51,8 @@ const Admin = () => {
 
     if (error) {
       setCancelError('Failed to cancel booking: ' + error.message)
+    } else {
+      refetch()
     }
   }
 
