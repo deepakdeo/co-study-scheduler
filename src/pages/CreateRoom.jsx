@@ -42,6 +42,7 @@ const CreateRoom = () => {
     description: '',
     slug: '',
     meetingLink: '',
+    hostEmail: '',
     hostTimezone: detectedTz,
     morningStart: 10,
     morningEnd: 15,
@@ -108,6 +109,8 @@ const CreateRoom = () => {
     if (!form.meetingLink.trim()) errs.meetingLink = 'Meeting link is required'
     else if (!/^https?:\/\/.+/.test(form.meetingLink.trim()))
       errs.meetingLink = 'Enter a valid URL starting with http:// or https://'
+    if (form.hostEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.hostEmail.trim()))
+      errs.hostEmail = 'Enter a valid email address'
     if (form.morningEnd <= form.morningStart)
       errs.morningWindow = 'End time must be after start time'
     if (form.eveningEnd <= form.eveningStart)
@@ -140,6 +143,7 @@ const CreateRoom = () => {
         title: form.title.trim(),
         description: form.description.trim() || null,
         meeting_link: form.meetingLink.trim(),
+        host_email: form.hostEmail.trim() || null,
         host_timezone: form.hostTimezone,
         morning_start: form.morningStart,
         morning_end: form.morningEnd,
@@ -247,6 +251,23 @@ const CreateRoom = () => {
             </p>
             {errors.meetingLink && (
               <p className="mt-1 text-sm text-red-600">{errors.meetingLink}</p>
+            )}
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>Host Email</label>
+            <input
+              type="email"
+              value={form.hostEmail}
+              onChange={(e) => updateField('hostEmail', e.target.value)}
+              placeholder="your@email.com"
+              className={errors.hostEmail ? INPUT_ERROR_CLASS : INPUT_CLASS}
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              Optional — receive email notifications when someone books a session.
+            </p>
+            {errors.hostEmail && (
+              <p className="mt-1 text-sm text-red-600">{errors.hostEmail}</p>
             )}
           </div>
         </section>

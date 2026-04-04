@@ -116,10 +116,35 @@ serve(async (req) => {
       );
     }
 
-    // Email to host (always — using a simple notification)
-    // Note: We don't have the host's email stored in the room.
-    // For v1, we skip host email. The admin view shows all bookings.
-    // To enable host emails, add a host_email column to the rooms table.
+    // Email to host
+    if (room.host_email) {
+      emails.push(
+        fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: FROM_EMAIL,
+            to: [room.host_email],
+            subject: `New Booking: ${booking.name} — ${room.title}`,
+            html: `
+              <h2>New booking on ${room.title}</h2>
+              <table style="margin: 16px 0; border-collapse: collapse;">
+                <tr><td style="padding: 4px 12px 4px 0; color: #666;">Who</td><td style="padding: 4px 0;"><strong>${booking.name}</strong></td></tr>
+                <tr><td style="padding: 4px 12px 4px 0; color: #666;">Date</td><td style="padding: 4px 0;">${hostDateStr}</td></tr>
+                <tr><td style="padding: 4px 12px 4px 0; color: #666;">Time</td><td style="padding: 4px 0;">${hostStartTime} – ${hostEndTime} (${room.host_timezone})</td></tr>
+                ${booking.email ? `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Email</td><td style="padding: 4px 0;"><a href="mailto:${booking.email}">${booking.email}</a></td></tr>` : ""}
+                ${booking.note ? `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Note</td><td style="padding: 4px 0;"><em>${booking.note}</em></td></tr>` : ""}
+              </table>
+              <p><a href="https://co-study-scheduler.vercel.app/r/${room.slug}/admin">View Admin Dashboard</a></p>
+              <p style="color: #999; font-size: 12px; margin-top: 24px;">Sent by Co-Study Scheduler</p>
+            `,
+          }),
+        })
+      );
+    }
 
     await Promise.all(emails);
 
