@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+@theme {
+  --color-cobalt-50: #e8f1fe;
+  --color-cobalt-100: #c5d9fc;
+  --color-cobalt-200: #9dbef9;
+  --color-cobalt-300: #7aa3f5;
+  --color-cobalt-400: #5688f0;
+  --color-cobalt-500: #0047AB;
+  --color-cobalt-600: #003d94;
+  --color-cobalt-700: #00337d;
+  --color-cobalt-800: #002966;
+  --color-cobalt-900: #001f4f;
+}
