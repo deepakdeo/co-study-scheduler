@@ -23,7 +23,7 @@ const Room = () => {
   const weekStart = weekDates[0]
   const weekEnd = weekDates[weekDates.length - 1]
 
-  const { bookings, loading: bookingsLoading } = useBookings(room?.id, weekStart, weekEnd)
+  const { bookings, loading: bookingsLoading, refetch } = useBookings(room?.id, weekStart, weekEnd)
 
   if (roomLoading) {
     return (
@@ -49,6 +49,7 @@ const Room = () => {
         onBack={() => {
           setConfirmation(null)
           setSelectedSlot(null)
+          refetch()
         }}
       />
     )

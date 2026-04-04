@@ -56,7 +56,7 @@ const useBookings = (roomId, weekStart, weekEnd) => {
     }
   }, [roomId, fetchBookings])
 
-  return { bookings, loading, error }
+  return { bookings, loading, error, refetch: fetchBookings }
 }
 
 export default useBookings
