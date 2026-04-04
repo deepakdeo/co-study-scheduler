@@ -69,7 +69,9 @@ const BookingForm = ({ slot, room, viewerTimezone, onCancel, onBooked }) => {
       // Trigger notification emails (fire-and-forget, don't block confirmation)
       supabase.functions.invoke('notify-booking', {
         body: { bookingId: data.id },
-      }).catch(() => {})
+      }).then((res) => {
+        if (res.error) console.error('Edge Function error:', res.error)
+      }).catch((err) => console.error('Edge Function invoke failed:', err))
 
       onBooked(data)
     } catch (err) {
