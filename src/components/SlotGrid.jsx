@@ -66,7 +66,7 @@ const SlotGrid = ({ room, weekDates, bookings, viewerTimezone, onSelectSlot }) =
                       <SlotCell
                         key={`m-${i}`}
                         slot={slot}
-                        booking={findBookingForSlot(slot, bookings)}
+                        bookingResult={findBookingForSlot(slot, bookings)}
                         isPast={isSlotPast(slot)}
                         viewerTimezone={viewerTimezone}
                         onSelect={onSelectSlot}
@@ -86,7 +86,7 @@ const SlotGrid = ({ room, weekDates, bookings, viewerTimezone, onSelectSlot }) =
                       <SlotCell
                         key={`e-${i}`}
                         slot={slot}
-                        booking={findBookingForSlot(slot, bookings)}
+                        bookingResult={findBookingForSlot(slot, bookings)}
                         isPast={isSlotPast(slot)}
                         viewerTimezone={viewerTimezone}
                         onSelect={onSelectSlot}
@@ -111,13 +111,13 @@ const renderSlotRows = (dayData, slotKey, bookings, viewerTimezone, onSelectSlot
     for (const day of dayData) {
       const slot = day[slotKey][i]
       if (slot) {
-        const booking = findBookingForSlot(slot, bookings)
+        const bookingResult = findBookingForSlot(slot, bookings)
         const isPast = isSlotPast(slot)
         rows.push(
           <SlotCell
             key={`${day.dateStr}-${slotKey}-${i}`}
             slot={slot}
-            booking={booking}
+            bookingResult={bookingResult}
             isPast={isPast}
             viewerTimezone={viewerTimezone}
             onSelect={onSelectSlot}

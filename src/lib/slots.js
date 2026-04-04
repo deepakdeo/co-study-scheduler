@@ -92,11 +92,13 @@ export const slotsOverlap = (startA, endA, startB, endB) => {
 }
 
 /**
- * Check if a slot is already booked.
- * Returns the booking if found, null otherwise.
+ * Check if a slot is booked or blocked by an overlapping booking.
+ * Returns { booking, isExactMatch } or null.
+ * - isExactMatch true: this slot's start time matches the booking's start time (the actual booked slot)
+ * - isExactMatch false: this slot overlaps with a booking but isn't the one that was booked (blocked)
  */
 export const findBookingForSlot = (slot, bookings) => {
-  return bookings.find(
+  const match = bookings.find(
     (b) =>
       b.status === 'confirmed' &&
       slotsOverlap(
@@ -105,7 +107,13 @@ export const findBookingForSlot = (slot, bookings) => {
         new Date(b.slot_start_utc).getTime(),
         new Date(b.slot_end_utc).getTime(),
       ),
-  ) || null
+  )
+  if (!match) return null
+
+  const isExactMatch =
+    slot.slotStartUtc.getTime() === new Date(match.slot_start_utc).getTime()
+
+  return { booking: match, isExactMatch }
 }
 
 /**
