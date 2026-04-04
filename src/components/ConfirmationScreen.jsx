@@ -3,15 +3,26 @@ import { format } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { supabase } from '../lib/supabase'
 
-const ConfirmationScreen = ({ booking, room, viewerTimezone, onBack, onCancelled }) => {
+const ConfirmationScreen = ({ booking, room, slug, viewerTimezone, onBack, onCancelled }) => {
   const [cancelling, setCancelling] = useState(false)
   const [cancelled, setCancelled] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const startInViewer = toZonedTime(new Date(booking.slot_start_utc), viewerTimezone)
   const endInViewer = toZonedTime(new Date(booking.slot_end_utc), viewerTimezone)
 
   const dateLabel = format(startInViewer, 'EEEE, MMMM d, yyyy')
   const timeLabel = `${format(startInViewer, 'h:mm a')} – ${format(endInViewer, 'h:mm a')}`
+
+  const manageUrl = `${window.location.origin}/r/${slug}?booking=${booking.id}`
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(manageUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
 
   const handleCancel = async () => {
     if (!confirm('Are you sure you want to cancel this booking?')) return
@@ -75,6 +86,28 @@ const ConfirmationScreen = ({ booking, room, viewerTimezone, onBack, onCancelled
           {room.host_name} will share your Zoom meeting link via direct message in the group.
         </p>
       )}
+
+      {/* Manage booking link */}
+      <div className="mb-6 rounded-lg border border-cobalt-200 bg-cobalt-50 p-4 text-left">
+        <p className="mb-2 text-sm font-medium text-gray-900">Save this link to manage your booking:</p>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            readOnly
+            value={manageUrl}
+            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-600"
+          />
+          <button
+            onClick={handleCopy}
+            className="whitespace-nowrap rounded border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">
+          Use this link to cancel or reschedule anytime — even from a different device.
+        </p>
+      </div>
 
       <div className="mb-6 rounded-lg bg-cobalt-50 p-4 text-left text-xs text-gray-600">
         <p className="mb-1 font-medium text-gray-900">Session Format</p>

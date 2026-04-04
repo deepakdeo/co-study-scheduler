@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { supabase } from '../lib/supabase'
@@ -42,6 +42,7 @@ const removeBookingFromStorage = (roomId) => {
 
 const Room = () => {
   const { slug } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { room, loading: roomLoading, error: roomError } = useRoom(slug)
   const { timezone, setTimezone } = useTimezone()
   const [weekOffset, setWeekOffset] = useState(0)
@@ -49,6 +50,7 @@ const Room = () => {
   const [confirmation, setConfirmation] = useState(null)
   const [myBooking, setMyBooking] = useState(null)
   const [cancelling, setCancelling] = useState(false)
+  const [loadingMyBooking, setLoadingMyBooking] = useState(false)
 
   const hostTimezone = room?.host_timezone || 'America/Chicago'
   const weekDates = getWeekRange(weekOffset, hostTimezone)
@@ -57,26 +59,54 @@ const Room = () => {
 
   const { bookings, loading: bookingsLoading, refetch } = useBookings(room?.id, weekStart, weekEnd)
 
-  // Check if the user has an active booking in this room
+  // Look up user's booking from URL param or localStorage
   useEffect(() => {
     if (!room) return
-    const storedBookingId = getBookingFromStorage(room.id)
-    if (!storedBookingId) {
+
+    const bookingIdFromUrl = searchParams.get('booking')
+    const bookingIdFromStorage = getBookingFromStorage(room.id)
+    const bookingId = bookingIdFromUrl || bookingIdFromStorage
+
+    if (!bookingId) {
       setMyBooking(null)
       return
     }
-    // Find it in the current bookings list
+
+    // First check current bookings list
     const found = bookings.find(
-      (b) => b.id === storedBookingId && b.status === 'confirmed',
+      (b) => b.id === bookingId && b.status === 'confirmed',
     )
     if (found) {
       setMyBooking(found)
-    } else {
-      // Booking was cancelled or not in current week — clear stale reference
-      setMyBooking(null)
-      removeBookingFromStorage(room.id)
+      saveBookingToStorage(room.id, bookingId)
+      return
     }
-  }, [room, bookings])
+
+    // If from URL but not in current week's bookings, fetch directly
+    if (bookingIdFromUrl) {
+      setLoadingMyBooking(true)
+      supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', bookingIdFromUrl)
+        .eq('room_id', room.id)
+        .eq('status', 'confirmed')
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setMyBooking(data)
+            saveBookingToStorage(room.id, data.id)
+          } else {
+            setMyBooking(null)
+            removeBookingFromStorage(room.id)
+          }
+          setLoadingMyBooking(false)
+        })
+    } else {
+      // localStorage reference but not in current week — might be a different week
+      setMyBooking(null)
+    }
+  }, [room, bookings, searchParams])
 
   const handleBooked = (booking) => {
     saveBookingToStorage(room.id, booking.id)
@@ -96,12 +126,15 @@ const Room = () => {
     if (!error) {
       removeBookingFromStorage(room.id)
       setMyBooking(null)
+      // Clear the booking param from URL
+      searchParams.delete('booking')
+      setSearchParams(searchParams, { replace: true })
       refetch()
     }
     setCancelling(false)
   }
 
-  if (roomLoading) {
+  if (roomLoading || loadingMyBooking) {
     return (
       <div className="py-20 text-center text-gray-500">Loading room...</div>
     )
@@ -121,6 +154,7 @@ const Room = () => {
       <ConfirmationScreen
         booking={confirmation}
         room={room}
+        slug={slug}
         viewerTimezone={timezone}
         onBack={() => {
           setConfirmation(null)
@@ -132,6 +166,8 @@ const Room = () => {
           setConfirmation(null)
           setSelectedSlot(null)
           setMyBooking(null)
+          searchParams.delete('booking')
+          setSearchParams(searchParams, { replace: true })
           refetch()
         }}
       />
