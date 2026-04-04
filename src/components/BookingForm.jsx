@@ -66,6 +66,13 @@ const BookingForm = ({ slot, room, viewerTimezone, onCancel, onBooked }) => {
 
       if (insertError) throw insertError
 
+      // Trigger notification email (fire-and-forget, don't block confirmation)
+      if (data.email) {
+        supabase.functions.invoke('notify-booking', {
+          body: { bookingId: data.id },
+        }).catch(() => {})
+      }
+
       onBooked(data)
     } catch (err) {
       setError(err.message || 'Failed to book. Please try again.')
