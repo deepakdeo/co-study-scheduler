@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { detectTimezone, getCommonTimezones } from '../lib/timezone'
 import { generateSlug, validateSlug, checkSlugUniqueness } from '../lib/slugify'
@@ -58,6 +58,7 @@ const CreateRoom = () => {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState(null)
   const [showPin, setShowPin] = useState(false)
+  const [createdSlug, setCreatedSlug] = useState(null)
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -155,12 +156,16 @@ const CreateRoom = () => {
       })
 
       if (error) throw error
-      navigate(`/r/${form.slug}`)
+      setCreatedSlug(form.slug)
     } catch (err) {
       setSubmitError(err.message || 'Failed to create room. Please try again.')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (createdSlug) {
+    return <RoomCreatedScreen slug={createdSlug} adminPin={form.adminPin} />
   }
 
   return (
@@ -381,6 +386,95 @@ const CreateRoom = () => {
           {submitting ? 'Creating...' : 'Create Room'}
         </button>
       </form>
+    </div>
+  )
+}
+
+const RoomCreatedScreen = ({ slug, adminPin }) => {
+  const [copiedPublic, setCopiedPublic] = useState(false)
+  const [copiedAdmin, setCopiedAdmin] = useState(false)
+
+  const baseUrl = window.location.origin
+  const publicUrl = `${baseUrl}/r/${slug}`
+  const adminUrl = `${baseUrl}/r/${slug}/admin`
+
+  const copyToClipboard = async (text, setCopied) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
+
+  return (
+    <div className="mx-auto max-w-lg">
+      <div className="rounded-xl bg-white p-8 shadow-sm">
+        <div className="mb-4 text-center text-4xl text-green-500">&#10003;</div>
+        <h1 className="mb-2 text-center text-2xl font-bold text-gray-900">Room Created!</h1>
+        <p className="mb-8 text-center text-sm text-gray-500">
+          Save the links below — you&apos;ll need them to share and manage your room.
+        </p>
+
+        {/* Public link */}
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-semibold text-gray-900">
+            Share this link with your study group:
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              readOnly
+              value={publicUrl}
+              className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+            />
+            <button
+              onClick={() => copyToClipboard(publicUrl, setCopiedPublic)}
+              className="whitespace-nowrap rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              {copiedPublic ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        </div>
+
+        {/* Admin link */}
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-semibold text-gray-900">
+            Admin dashboard (for managing bookings):
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              readOnly
+              value={adminUrl}
+              className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+            />
+            <button
+              onClick={() => copyToClipboard(adminUrl, setCopiedAdmin)}
+              className="whitespace-nowrap rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              {copiedAdmin ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-gray-500">
+            Your admin PIN is <span className="font-mono font-medium text-gray-700">{adminPin}</span> — save it somewhere safe.
+          </p>
+        </div>
+
+        <div className="flex gap-3">
+          <Link
+            to={`/r/${slug}`}
+            className="flex-1 rounded-lg border border-gray-300 py-2.5 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            View Room
+          </Link>
+          <Link
+            to={`/r/${slug}/admin`}
+            className="flex-1 rounded-lg bg-cobalt-600 py-2.5 text-center text-sm font-semibold text-white hover:bg-cobalt-700"
+          >
+            Go to Admin
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }
