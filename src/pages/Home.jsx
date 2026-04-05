@@ -14,7 +14,7 @@ const steps = [
   {
     number: '3',
     title: 'Study Together',
-    description: 'Members book 2-hour sessions in their own timezone and get the meeting link.',
+    description: 'Members book sessions in their own timezone and get the meeting link.',
   },
 ]
 
@@ -29,7 +29,7 @@ const Home = () => {
           <span className="text-cobalt-600">Together</span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
-          Create a room, share the link, and let your study group book 2-hour focused sessions in
+          Create a room, share the link, and let your study group book focused sessions in
           their own timezone. No accounts needed.
         </p>
         <div className="mt-8">

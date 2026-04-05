@@ -182,8 +182,10 @@ const Room = () => {
         <p className="mt-1 text-gray-600">Hosted by {room.host_name}</p>
         {room.description && <p className="mt-2 text-sm text-gray-500">{room.description}</p>}
         <p className="mt-3 text-xs text-gray-400">
-          Sessions are 2 hours: 5–10 min hello &amp; goals &rarr; ~100 min focused study &rarr;
-          10–15 min wrap-up &amp; chat
+          Sessions are {room.slot_duration >= 60
+            ? `${room.slot_duration / 60} hour${room.slot_duration > 60 ? 's' : ''}`
+            : `${room.slot_duration} min`}
+          {room.slot_duration >= 60 && <> &mdash; start with a quick hello, then focused study, wrap up with a chat</>}
         </p>
       </div>
 

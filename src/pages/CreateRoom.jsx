@@ -44,6 +44,7 @@ const CreateRoom = () => {
     meetingLink: '',
     hostEmail: '',
     hostTimezone: detectedTz,
+    slotDuration: 120,
     morningStart: 10,
     morningEnd: 15,
     eveningStart: 19,
@@ -111,10 +112,15 @@ const CreateRoom = () => {
       errs.meetingLink = 'Enter a valid URL starting with http:// or https://'
     if (form.hostEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.hostEmail.trim()))
       errs.hostEmail = 'Enter a valid email address'
+    const durationHours = form.slotDuration / 60
     if (form.morningEnd <= form.morningStart)
       errs.morningWindow = 'End time must be after start time'
+    else if (form.morningEnd - form.morningStart < durationHours)
+      errs.morningWindow = `Window must be at least ${form.slotDuration} minutes for this session duration`
     if (form.eveningEnd <= form.eveningStart)
       errs.eveningWindow = 'End time must be after start time'
+    else if (form.eveningEnd - form.eveningStart < durationHours)
+      errs.eveningWindow = `Window must be at least ${form.slotDuration} minutes for this session duration`
     if (!form.adminPin) errs.adminPin = 'Admin PIN is required'
     else if (!/^\d{4,6}$/.test(form.adminPin))
       errs.adminPin = 'PIN must be 4-6 digits'
@@ -149,7 +155,7 @@ const CreateRoom = () => {
         morning_end: form.morningEnd,
         evening_start: form.eveningStart,
         evening_end: form.eveningEnd,
-        slot_duration: 120,
+        slot_duration: form.slotDuration,
         slot_interval: 30,
         admin_pin: form.adminPin,
       })
@@ -343,9 +349,25 @@ const CreateRoom = () => {
             )}
           </div>
 
-          <p className="text-sm text-gray-500">
-            Session duration: 2 hours (fixed) with 30-minute rolling start times.
-          </p>
+          <div>
+            <label className={LABEL_CLASS}>Session Duration</label>
+            <select
+              value={form.slotDuration}
+              onChange={(e) => updateField('slotDuration', Number(e.target.value))}
+              className={INPUT_CLASS}
+            >
+              <option value={30}>30 minutes</option>
+              <option value={45}>45 minutes</option>
+              <option value={60}>1 hour</option>
+              <option value={90}>1.5 hours</option>
+              <option value={120}>2 hours</option>
+              <option value={150}>2.5 hours</option>
+              <option value={180}>3 hours</option>
+            </select>
+            <p className="mt-1 text-sm text-gray-500">
+              Slots will have 30-minute rolling start times.
+            </p>
+          </div>
         </section>
 
         {/* Security */}

@@ -109,14 +109,16 @@ const ConfirmationScreen = ({ booking, room, slug, viewerTimezone, onBack, onCan
         </p>
       </div>
 
-      <div className="mb-6 rounded-lg bg-cobalt-50 p-4 text-left text-xs text-gray-600">
-        <p className="mb-1 font-medium text-gray-900">Session Format</p>
-        <ul className="space-y-1">
-          <li>5–10 min: Hello &amp; share goals</li>
-          <li>~100 min: Focused study</li>
-          <li>10–15 min: Wrap-up &amp; chat</li>
-        </ul>
-      </div>
+      {room.slot_duration >= 60 && (
+        <div className="mb-6 rounded-lg bg-cobalt-50 p-4 text-left text-xs text-gray-600">
+          <p className="mb-1 font-medium text-gray-900">Session Format</p>
+          <ul className="space-y-1">
+            <li>5–10 min: Hello &amp; share goals</li>
+            <li>~{room.slot_duration - 20} min: Focused study</li>
+            <li>10–15 min: Wrap-up &amp; chat</li>
+          </ul>
+        </div>
+      )}
 
       <div className="flex gap-3 justify-center">
         <button
