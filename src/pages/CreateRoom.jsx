@@ -45,6 +45,9 @@ const CreateRoom = () => {
     hostEmail: '',
     hostTimezone: detectedTz,
     slotDuration: 120,
+    scheduleMode: 'split',
+    fullDayStart: 8,
+    fullDayEnd: 20,
     morningStart: 10,
     morningEnd: 15,
     eveningStart: 19,
@@ -112,15 +115,26 @@ const CreateRoom = () => {
       errs.meetingLink = 'Enter a valid URL starting with http:// or https://'
     if (form.hostEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.hostEmail.trim()))
       errs.hostEmail = 'Enter a valid email address'
+    if (!form.slotDuration || form.slotDuration < 15)
+      errs.slotDuration = 'Duration must be at least 15 minutes'
+    else if (form.slotDuration > 480)
+      errs.slotDuration = 'Duration cannot exceed 8 hours'
     const durationHours = form.slotDuration / 60
-    if (form.morningEnd <= form.morningStart)
-      errs.morningWindow = 'End time must be after start time'
-    else if (form.morningEnd - form.morningStart < durationHours)
-      errs.morningWindow = `Window must be at least ${form.slotDuration} minutes for this session duration`
-    if (form.eveningEnd <= form.eveningStart)
-      errs.eveningWindow = 'End time must be after start time'
-    else if (form.eveningEnd - form.eveningStart < durationHours)
-      errs.eveningWindow = `Window must be at least ${form.slotDuration} minutes for this session duration`
+    if (form.scheduleMode === 'full') {
+      if (form.fullDayEnd <= form.fullDayStart)
+        errs.fullDayWindow = 'End time must be after start time'
+      else if (form.fullDayEnd - form.fullDayStart < durationHours)
+        errs.fullDayWindow = `Window must be at least ${form.slotDuration} minutes for this session duration`
+    } else {
+      if (form.morningEnd <= form.morningStart)
+        errs.morningWindow = 'End time must be after start time'
+      else if (form.morningEnd - form.morningStart < durationHours)
+        errs.morningWindow = `Window must be at least ${form.slotDuration} minutes for this session duration`
+      if (form.eveningEnd <= form.eveningStart)
+        errs.eveningWindow = 'End time must be after start time'
+      else if (form.eveningEnd - form.eveningStart < durationHours)
+        errs.eveningWindow = `Window must be at least ${form.slotDuration} minutes for this session duration`
+    }
     if (!form.adminPin) errs.adminPin = 'Admin PIN is required'
     else if (!/^\d{4,6}$/.test(form.adminPin))
       errs.adminPin = 'PIN must be 4-6 digits'
@@ -143,6 +157,7 @@ const CreateRoom = () => {
         return
       }
 
+      const isFullDay = form.scheduleMode === 'full'
       const { error } = await supabase.from('rooms').insert({
         slug: form.slug,
         host_name: form.hostName.trim(),
@@ -151,10 +166,10 @@ const CreateRoom = () => {
         meeting_link: form.meetingLink.trim() || null,
         host_email: form.hostEmail.trim() || null,
         host_timezone: form.hostTimezone,
-        morning_start: form.morningStart,
-        morning_end: form.morningEnd,
-        evening_start: form.eveningStart,
-        evening_end: form.eveningEnd,
+        morning_start: isFullDay ? form.fullDayStart : form.morningStart,
+        morning_end: isFullDay ? form.fullDayEnd : form.morningEnd,
+        evening_start: isFullDay ? 0 : form.eveningStart,
+        evening_end: isFullDay ? 0 : form.eveningEnd,
         slot_duration: form.slotDuration,
         slot_interval: 30,
         admin_pin: form.adminPin,
@@ -302,71 +317,127 @@ const CreateRoom = () => {
           </div>
 
           <div>
-            <label className={LABEL_CLASS}>Morning / Afternoon Window</label>
-            <div className="flex items-center gap-3">
-              <HourSelect
-                value={form.morningStart}
-                onChange={(v) => updateField('morningStart', v)}
-                min={6}
-                max={18}
-                error={errors.morningWindow}
-              />
-              <span className="text-gray-500">to</span>
-              <HourSelect
-                value={form.morningEnd}
-                onChange={(v) => updateField('morningEnd', v)}
-                min={6}
-                max={18}
-                error={errors.morningWindow}
-              />
+            <label className={LABEL_CLASS}>Availability Mode</label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => updateField('scheduleMode', 'split')}
+                className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium ${
+                  form.scheduleMode === 'split'
+                    ? 'border-cobalt-500 bg-cobalt-50 text-cobalt-700'
+                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Morning + Evening
+              </button>
+              <button
+                type="button"
+                onClick={() => updateField('scheduleMode', 'full')}
+                className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium ${
+                  form.scheduleMode === 'full'
+                    ? 'border-cobalt-500 bg-cobalt-50 text-cobalt-700'
+                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Full Day
+              </button>
             </div>
-            {errors.morningWindow && (
-              <p className="mt-1 text-sm text-red-600">{errors.morningWindow}</p>
-            )}
           </div>
 
-          <div>
-            <label className={LABEL_CLASS}>Evening Window</label>
-            <div className="flex items-center gap-3">
-              <HourSelect
-                value={form.eveningStart}
-                onChange={(v) => updateField('eveningStart', v)}
-                min={16}
-                max={23}
-                error={errors.eveningWindow}
-              />
-              <span className="text-gray-500">to</span>
-              <HourSelect
-                value={form.eveningEnd}
-                onChange={(v) => updateField('eveningEnd', v)}
-                min={16}
-                max={24}
-                error={errors.eveningWindow}
-              />
+          {form.scheduleMode === 'full' ? (
+            <div>
+              <label className={LABEL_CLASS}>Available Hours</label>
+              <div className="flex items-center gap-3">
+                <HourSelect
+                  value={form.fullDayStart}
+                  onChange={(v) => updateField('fullDayStart', v)}
+                  min={0}
+                  max={23}
+                  error={errors.fullDayWindow}
+                />
+                <span className="text-gray-500">to</span>
+                <HourSelect
+                  value={form.fullDayEnd}
+                  onChange={(v) => updateField('fullDayEnd', v)}
+                  min={1}
+                  max={24}
+                  error={errors.fullDayWindow}
+                />
+              </div>
+              {errors.fullDayWindow && (
+                <p className="mt-1 text-sm text-red-600">{errors.fullDayWindow}</p>
+              )}
             </div>
-            {errors.eveningWindow && (
-              <p className="mt-1 text-sm text-red-600">{errors.eveningWindow}</p>
-            )}
-          </div>
+          ) : (
+            <>
+              <div>
+                <label className={LABEL_CLASS}>Morning / Afternoon Window</label>
+                <div className="flex items-center gap-3">
+                  <HourSelect
+                    value={form.morningStart}
+                    onChange={(v) => updateField('morningStart', v)}
+                    min={6}
+                    max={18}
+                    error={errors.morningWindow}
+                  />
+                  <span className="text-gray-500">to</span>
+                  <HourSelect
+                    value={form.morningEnd}
+                    onChange={(v) => updateField('morningEnd', v)}
+                    min={6}
+                    max={18}
+                    error={errors.morningWindow}
+                  />
+                </div>
+                {errors.morningWindow && (
+                  <p className="mt-1 text-sm text-red-600">{errors.morningWindow}</p>
+                )}
+              </div>
+
+              <div>
+                <label className={LABEL_CLASS}>Evening Window</label>
+                <div className="flex items-center gap-3">
+                  <HourSelect
+                    value={form.eveningStart}
+                    onChange={(v) => updateField('eveningStart', v)}
+                    min={16}
+                    max={23}
+                    error={errors.eveningWindow}
+                  />
+                  <span className="text-gray-500">to</span>
+                  <HourSelect
+                    value={form.eveningEnd}
+                    onChange={(v) => updateField('eveningEnd', v)}
+                    min={16}
+                    max={24}
+                    error={errors.eveningWindow}
+                  />
+                </div>
+                {errors.eveningWindow && (
+                  <p className="mt-1 text-sm text-red-600">{errors.eveningWindow}</p>
+                )}
+              </div>
+            </>
+          )}
 
           <div>
-            <label className={LABEL_CLASS}>Session Duration</label>
-            <select
+            <label className={LABEL_CLASS}>Session Duration (minutes)</label>
+            <input
+              type="number"
+              min={15}
+              max={480}
+              step={5}
               value={form.slotDuration}
-              onChange={(e) => updateField('slotDuration', Number(e.target.value))}
-              className={INPUT_CLASS}
-            >
-              <option value={30}>30 minutes</option>
-              <option value={45}>45 minutes</option>
-              <option value={60}>1 hour</option>
-              <option value={90}>1.5 hours</option>
-              <option value={120}>2 hours</option>
-              <option value={150}>2.5 hours</option>
-              <option value={180}>3 hours</option>
-            </select>
+              onChange={(e) => updateField('slotDuration', Number(e.target.value) || '')}
+              placeholder="e.g., 120"
+              className={errors.slotDuration ? INPUT_ERROR_CLASS : INPUT_CLASS}
+            />
             <p className="mt-1 text-sm text-gray-500">
-              Slots will have 30-minute rolling start times.
+              Any value from 15 to 480 minutes. Slots will have 30-minute rolling start times.
             </p>
+            {errors.slotDuration && (
+              <p className="mt-1 text-sm text-red-600">{errors.slotDuration}</p>
+            )}
           </div>
         </section>
 

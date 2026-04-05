@@ -5,6 +5,7 @@ import SlotCell from './SlotCell'
 const SlotGrid = ({ room, weekDates, bookings, viewerTimezone, onSelectSlot }) => {
   if (!room || !weekDates.length) return null
 
+  const isFullDay = room.evening_start === room.evening_end
   const dayData = weekDates.map((dateStr) => ({
     dateStr,
     ...generateDaySlots(dateStr, room),
@@ -34,15 +35,21 @@ const SlotGrid = ({ room, weekDates, bookings, viewerTimezone, onSelectSlot }) =
             )
           })}
 
-          <div className="col-span-5 border-b border-gray-200 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase">
-            Morning / Afternoon
-          </div>
+          {!isFullDay && (
+            <div className="col-span-5 border-b border-gray-200 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase">
+              Morning / Afternoon
+            </div>
+          )}
           {renderSlotRows(dayData, 'morningSlots', bookings, viewerTimezone, onSelectSlot)}
 
-          <div className="col-span-5 mt-4 border-b border-gray-200 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase">
-            Evening
-          </div>
-          {renderSlotRows(dayData, 'eveningSlots', bookings, viewerTimezone, onSelectSlot)}
+          {!isFullDay && dayData.some((d) => d.eveningSlots.length > 0) && (
+            <>
+              <div className="col-span-5 mt-4 border-b border-gray-200 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase">
+                Evening
+              </div>
+              {renderSlotRows(dayData, 'eveningSlots', bookings, viewerTimezone, onSelectSlot)}
+            </>
+          )}
         </div>
       </div>
 
@@ -58,9 +65,11 @@ const SlotGrid = ({ room, weekDates, bookings, viewerTimezone, onSelectSlot }) =
 
               {day.morningSlots.length > 0 && (
                 <>
-                  <p className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase">
-                    Morning / Afternoon
-                  </p>
+                  {!isFullDay && (
+                    <p className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase">
+                      Morning / Afternoon
+                    </p>
+                  )}
                   <div className="mb-4 grid grid-cols-2 gap-2">
                     {day.morningSlots.map((slot, i) => (
                       <SlotCell
@@ -76,7 +85,7 @@ const SlotGrid = ({ room, weekDates, bookings, viewerTimezone, onSelectSlot }) =
                 </>
               )}
 
-              {day.eveningSlots.length > 0 && (
+              {!isFullDay && day.eveningSlots.length > 0 && (
                 <>
                   <p className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase">
                     Evening
