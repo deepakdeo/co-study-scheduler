@@ -107,8 +107,7 @@ const CreateRoom = () => {
     const slugResult = validateSlug(form.slug)
     if (!slugResult.valid) errs.slug = slugResult.error
     else if (slugAvailable === false) errs.slug = 'This slug is already taken'
-    if (!form.meetingLink.trim()) errs.meetingLink = 'Meeting link is required'
-    else if (!/^https?:\/\/.+/.test(form.meetingLink.trim()))
+    if (form.meetingLink.trim() && !/^https?:\/\/.+/.test(form.meetingLink.trim()))
       errs.meetingLink = 'Enter a valid URL starting with http:// or https://'
     if (form.hostEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.hostEmail.trim()))
       errs.hostEmail = 'Enter a valid email address'
@@ -143,7 +142,7 @@ const CreateRoom = () => {
         host_name: form.hostName.trim(),
         title: form.title.trim(),
         description: form.description.trim() || null,
-        meeting_link: form.meetingLink.trim(),
+        meeting_link: form.meetingLink.trim() || null,
         host_email: form.hostEmail.trim() || null,
         host_timezone: form.hostTimezone,
         morning_start: form.morningStart,
@@ -243,7 +242,7 @@ const CreateRoom = () => {
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Meeting Link</h2>
           <div>
-            <label className={LABEL_CLASS}>Zoom / Meeting Link *</label>
+            <label className={LABEL_CLASS}>Zoom / Meeting Link</label>
             <input
               type="url"
               value={form.meetingLink}

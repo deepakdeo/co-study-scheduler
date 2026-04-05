@@ -1,16 +1,112 @@
-# React + Vite
+# Co-Study Scheduler
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A multi-tenant real-time scheduling tool where anyone can create a "room," get a shareable link, and let others book 2-hour co-study sessions. All times auto-convert to the viewer's local timezone.
 
-Currently, two official plugins are available:
+**Live:** [co-study-scheduler.vercel.app](https://co-study-scheduler.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **No login required** -- create a room, share the link, and let people book
+- **Automatic timezone conversion** -- times display in each viewer's local timezone
+- **Real-time updates** -- bookings appear live for all viewers via Supabase Realtime
+- **Admin dashboard** -- PIN-protected view with booking details and cancellation controls
+- **Booking management** -- users get a unique link to cancel/reschedule from any device
+- **Email notifications** -- optional booking confirmations via Resend (requires setup)
+- **Mobile responsive** -- stacked card layout on small screens, 5-column grid on desktop
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- **Frontend:** React + Vite + Tailwind CSS v4
+- **Database/Backend:** Supabase (PostgreSQL + Realtime + Edge Functions + Row Level Security)
+- **Hosting:** Vercel
+- **Email:** Resend (optional)
+- **Routing:** react-router-dom v6
+- **Timezone:** date-fns + date-fns-tz
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## How It Works
+
+1. **Create a Room** -- set your name, availability windows, timezone, and admin PIN
+2. **Share Your Link** -- send the room URL to your study group
+3. **Study Together** -- members book 2-hour sessions in their own timezone
+
+## Self-Hosting Guide
+
+Want to run your own instance? Follow these steps:
+
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) account (free tier works)
+- A [Vercel](https://vercel.com) account (free tier works)
+- A [Resend](https://resend.com) account (optional, for email notifications)
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/deepakdeo/co-study-scheduler.git
+cd co-study-scheduler
+npm install
+```
+
+### 2. Set up Supabase
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Go to **SQL Editor** and run the migrations in order:
+   - `supabase/migrations/001_create_tables.sql`
+   - `supabase/migrations/002_add_host_email.sql`
+   - `supabase/migrations/003_fix_bookings_update_policy.sql`
+   - `supabase/migrations/004_fix_bookings_policies.sql`
+   - `supabase/migrations/005_make_meeting_link_optional.sql`
+3. Copy your project URL and anon key from **Settings > API**
+
+### 3. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your Supabase credentials:
+
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 4. Run locally
+
+```bash
+npm run dev
+```
+
+### 5. Deploy to Vercel
+
+1. Push to GitHub
+2. Import the repo in [Vercel](https://vercel.com)
+3. Add the environment variables from your `.env`
+4. Deploy
+
+### 6. Email notifications (optional)
+
+1. Create a [Resend](https://resend.com) account and get an API key
+2. Install the Supabase CLI: `npm i -g supabase`
+3. Link your project: `npx supabase link --project-ref YOUR_PROJECT_REF`
+4. Set the secret: `npx supabase secrets set RESEND_API_KEY=your_resend_key`
+5. Deploy the function: `npx supabase functions deploy notify-booking --no-verify-jwt`
+6. To send emails to any address (not just your own), verify a custom domain in Resend
+
+## Project Structure
+
+```
+src/
+  components/    UI components (SlotGrid, BookingForm, Layout, etc.)
+  pages/         Route pages (Home, CreateRoom, Room, Admin)
+  hooks/         Custom hooks (useRoom, useBookings, useTimezone)
+  lib/           Utilities (supabase client, slot generation, timezone, slugify)
+supabase/
+  migrations/    SQL schema migrations
+  functions/     Edge Functions (notify-booking)
+```
+
+## License
+
+MIT

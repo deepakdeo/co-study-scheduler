@@ -1,0 +1,1 @@
+ALTER TABLE rooms ALTER COLUMN meeting_link DROP NOT NULL;
