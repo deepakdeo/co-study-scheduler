@@ -42,9 +42,9 @@ Feel free to use it as-is, fork it, or extend it however you like -- make it mul
 
 ## How It Works
 
-1. **Create a Room** -- set your name, availability windows, timezone, and admin PIN
+1. **Create a Room** -- set your name, session duration, availability windows, timezone, and admin PIN
 2. **Share Your Link** -- send the room URL to your study group
-3. **Study Together** -- members book 2-hour sessions in their own timezone
+3. **Study Together** -- members book sessions in their own timezone
 
 ## Self-Hosting Guide
 
