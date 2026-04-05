@@ -4,6 +4,14 @@ A multi-tenant real-time scheduling tool where anyone can create a "room," get a
 
 **Live:** [co-study-scheduler.vercel.app](https://co-study-scheduler.vercel.app)
 
+## Why I Built This
+
+I joined a closed group of fellow learners and wanted a way to meet new people in the community while staying productive. The idea was simple: instead of just chatting, why not share a focused study session together?
+
+I create a room, share the link with the group, and members book whichever slot works for them. Everyone in the group can see who's booked which slot and which ones are still open. I share a Zoom link with each registrant via direct message -- though the tool also supports adding a common meeting link that gets emailed directly to registrants (if the host sets up email notifications with their own domain).
+
+Feel free to use it as-is, fork it, or extend it however you like -- make it multi-dimensional for your own community.
+
 ## Features
 
 - **No login required** -- create a room, share the link, and let people book
