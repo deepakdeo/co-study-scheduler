@@ -1,8 +1,16 @@
 # Co-Study Scheduler
 
-A multi-tenant real-time scheduling tool where anyone can create a "room," get a shareable link, and let others book 2-hour co-study sessions. All times auto-convert to the viewer's local timezone.
+A multi-tenant real-time scheduling tool where anyone can create a "room," get a shareable link, and let others book co-study sessions. All times auto-convert to the viewer's local timezone.
 
 **Live:** [co-study-scheduler.vercel.app](https://co-study-scheduler.vercel.app)
+
+## Demo
+
+### Host: Creating a Room
+<video src="https://github.com/deepakdeo/co-study-scheduler/raw/main/docs/demo/01-create-room.mp4" width="100%" autoplay loop muted playsinline></video>
+
+### User: Booking a Session
+<video src="https://github.com/deepakdeo/co-study-scheduler/raw/main/docs/demo/02-book-session.mp4" width="100%" autoplay loop muted playsinline></video>
 
 ## Why I Built This
 
@@ -18,6 +26,7 @@ Feel free to use it as-is, fork it, or extend it however you like -- make it mul
 - **Automatic timezone conversion** -- times display in each viewer's local timezone
 - **Real-time updates** -- bookings appear live for all viewers via Supabase Realtime
 - **Admin dashboard** -- PIN-protected view with booking details and cancellation controls
+- **Flexible scheduling** -- custom session durations (15 min to 8 hours), split or full-day windows
 - **Booking management** -- users get a unique link to cancel/reschedule from any device
 - **Email notifications** -- optional booking confirmations via Resend (requires setup)
 - **Mobile responsive** -- stacked card layout on small screens, 5-column grid on desktop
