@@ -30,3 +30,6 @@ dist-ssr
 
 # Build journal (local-only provenance tracking)
 build_journal.md
+
+# Supabase CLI temp files
+supabase/.temp/
