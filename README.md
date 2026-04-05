@@ -7,10 +7,10 @@ A multi-tenant real-time scheduling tool where anyone can create a "room," get a
 ## Demo
 
 ### Host: Creating a Room
-<video src="https://github.com/deepakdeo/co-study-scheduler/raw/main/docs/demo/01-create-room.mp4" width="100%" autoplay loop muted playsinline></video>
+![Host creating a room](docs/demo/01-create-room.gif)
 
 ### User: Booking a Session
-<video src="https://github.com/deepakdeo/co-study-scheduler/raw/main/docs/demo/02-book-session.mp4" width="100%" autoplay loop muted playsinline></video>
+![User booking a session](docs/demo/02-book-session.gif)
 
 ## Why I Built This
 
