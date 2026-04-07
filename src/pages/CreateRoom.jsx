@@ -291,6 +291,19 @@ const CreateRoom = () => {
             <p className="mt-1 text-sm text-gray-500">
               Optional — receive email notifications when someone books a session.
             </p>
+            <p className="mt-1 text-sm text-amber-600">
+              Email notifications require a self-hosted setup. The project is open source — if
+              you're comfortable deploying your own instance, see the{' '}
+              <a
+                href="https://github.com/deepakdeo/co-study-scheduler#self-hosting-guide"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-amber-700"
+              >
+                self-hosting guide
+              </a>
+              . Your room works perfectly without email.
+            </p>
             {errors.hostEmail && (
               <p className="mt-1 text-sm text-red-600">{errors.hostEmail}</p>
             )}

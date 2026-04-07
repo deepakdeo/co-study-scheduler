@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { format } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { supabase } from '../lib/supabase'
+import { downloadICS } from '../lib/calendar'
 
 const ConfirmationScreen = ({ booking, room, slug, viewerTimezone, onBack, onCancelled }) => {
   const [cancelling, setCancelling] = useState(false)
   const [cancelled, setCancelled] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [detailsCopied, setDetailsCopied] = useState(false)
 
   const startInViewer = toZonedTime(new Date(booking.slot_start_utc), viewerTimezone)
   const endInViewer = toZonedTime(new Date(booking.slot_end_utc), viewerTimezone)
@@ -21,6 +23,24 @@ const ConfirmationScreen = ({ booking, room, slug, viewerTimezone, onBack, onCan
       await navigator.clipboard.writeText(manageUrl)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
+
+  const handleAddToCalendar = () => {
+    downloadICS({
+      title: room.title,
+      room,
+      startUtc: booking.slot_start_utc,
+      endUtc: booking.slot_end_utc,
+    })
+  }
+
+  const handleCopyDetails = async () => {
+    const details = `${room.title}\nWith ${room.host_name}\n${dateLabel}\n${timeLabel} (${viewerTimezone})`
+    try {
+      await navigator.clipboard.writeText(details)
+      setDetailsCopied(true)
+      setTimeout(() => setDetailsCopied(false), 2000)
     } catch {}
   }
 
@@ -74,6 +94,29 @@ const ConfirmationScreen = ({ booking, room, slug, viewerTimezone, onBack, onCan
         <p className="mt-2 text-sm font-medium text-cobalt-600">{dateLabel}</p>
         <p className="text-sm text-cobalt-600">{timeLabel}</p>
         <p className="mt-1 text-xs text-gray-500">Times shown in your timezone ({viewerTimezone})</p>
+      </div>
+
+      {/* Add to Calendar & Copy Details */}
+      <div className="mb-6 flex gap-3 justify-center">
+        <button
+          onClick={handleAddToCalendar}
+          className="flex items-center gap-2 rounded-lg bg-cobalt-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cobalt-700"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+          </svg>
+          Add to Calendar
+        </button>
+        <button
+          onClick={handleCopyDetails}
+          className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+          </svg>
+          {detailsCopied ? 'Copied!' : 'Copy Details'}
+        </button>
       </div>
 
       {booking.email ? (

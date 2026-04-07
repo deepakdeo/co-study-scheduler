@@ -27,6 +27,7 @@ Feel free to use it as-is, fork it, or extend it however you like -- make it mul
 - **Real-time updates** -- bookings appear live for all viewers via Supabase Realtime
 - **Admin dashboard** -- PIN-protected view with booking details and cancellation controls
 - **Flexible scheduling** -- custom session durations (15 min to 8 hours), split or full-day windows
+- **Add to Calendar** -- one-click .ics download adds the session to Google Calendar, Apple Calendar, or Outlook
 - **Booking management** -- users get a unique link to cancel/reschedule from any device
 - **Email notifications** -- optional booking confirmations via Resend (requires setup)
 - **Mobile responsive** -- stacked card layout on small screens, 5-column grid on desktop
@@ -118,7 +119,7 @@ src/
   components/    UI components (SlotGrid, BookingForm, Layout, etc.)
   pages/         Route pages (Home, CreateRoom, Room, Admin)
   hooks/         Custom hooks (useRoom, useBookings, useTimezone)
-  lib/           Utilities (supabase client, slot generation, timezone, slugify)
+  lib/           Utilities (supabase client, slot generation, timezone, slugify, calendar)
 supabase/
   migrations/    SQL schema migrations
   functions/     Edge Functions (notify-booking)

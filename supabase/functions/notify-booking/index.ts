@@ -90,6 +90,32 @@ serve(async (req) => {
       timeZone: room.host_timezone,
     });
 
+    // Generate ICS calendar file
+    const toICSDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    };
+
+    const icsContent = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Co-Study Scheduler//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `UID:${bookingId}@co-study-scheduler`,
+      `DTSTAMP:${toICSDate(new Date())}`,
+      `DTSTART:${toICSDate(startDate)}`,
+      `DTEND:${toICSDate(endDate)}`,
+      `SUMMARY:${room.title} - ${booking.name}`,
+      `DESCRIPTION:Co-study session with ${booking.name}${booking.email ? "\\nEmail: " + booking.email : ""}${booking.note ? "\\nNote: " + booking.note : ""}`,
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+
+    // Base64 encode for Resend attachment — use TextEncoder to handle any non-ASCII safely
+    const icsBytes = new TextEncoder().encode(icsContent);
+    const icsBase64 = btoa(String.fromCharCode(...icsBytes));
+
     const emails: Promise<Response>[] = [];
 
     // Email to booker (if they provided an email)
@@ -120,8 +146,15 @@ serve(async (req) => {
                 <li>~100 min: Focused study</li>
                 <li>10–15 min: Wrap-up & chat</li>
               </ul>
+              <p>📎 An .ics calendar file is attached — open it to add this session to your calendar.</p>
               <p style="color: #999; font-size: 12px; margin-top: 24px;">Sent by Co-Study Scheduler</p>
             `,
+            attachments: [
+              {
+                filename: "co-study-session.ics",
+                content: icsBase64,
+              },
+            ],
           }),
         })
       );
@@ -149,9 +182,16 @@ serve(async (req) => {
                 ${booking.email ? `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Email</td><td style="padding: 4px 0;"><a href="mailto:${booking.email}">${booking.email}</a></td></tr>` : ""}
                 ${booking.note ? `<tr><td style="padding: 4px 12px 4px 0; color: #666;">Note</td><td style="padding: 4px 0;"><em>${booking.note}</em></td></tr>` : ""}
               </table>
+              <p>📎 An .ics calendar file is attached — open it to add this session to your calendar.</p>
               <p><a href="https://co-study-scheduler.vercel.app/r/${room.slug}/admin">View Admin Dashboard</a></p>
               <p style="color: #999; font-size: 12px; margin-top: 24px;">Sent by Co-Study Scheduler</p>
             `,
+            attachments: [
+              {
+                filename: "co-study-session.ics",
+                content: icsBase64,
+              },
+            ],
           }),
         })
       );
