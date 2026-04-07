@@ -54,12 +54,12 @@ const features = [
     description: 'Custom session durations, split or full-day availability windows.',
   },
   {
-    title: 'Admin dashboard',
-    description: 'PIN-protected view to manage bookings and see contact details.',
+    title: 'Add to Calendar',
+    description: 'One-click .ics download for Google Calendar, Apple Calendar, or Outlook.',
   },
   {
-    title: 'Mobile friendly',
-    description: 'Works great on phones, tablets, and desktops.',
+    title: 'Admin dashboard',
+    description: 'PIN-protected view to manage bookings and see contact details.',
   },
 ]
 
