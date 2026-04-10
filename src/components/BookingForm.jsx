@@ -8,6 +8,7 @@ const BookingForm = ({ slot, room, viewerTimezone, onCancel, onBooked }) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [note, setNote] = useState('')
+  const [showName, setShowName] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
@@ -60,6 +61,7 @@ const BookingForm = ({ slot, room, viewerTimezone, onCancel, onBooked }) => {
           slot_start_utc: slot.slotStartUtc.toISOString(),
           slot_end_utc: slot.slotEndUtc.toISOString(),
           booker_timezone: viewerTimezone,
+          show_name: showName,
         })
         .select()
         .single()
@@ -128,6 +130,22 @@ const BookingForm = ({ slot, room, viewerTimezone, onCancel, onBooked }) => {
             className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-cobalt-500 focus:ring-2 focus:ring-cobalt-500/20 focus:outline-none"
           />
           <p className="mt-1 text-xs text-gray-500">Only the host sees this</p>
+        </div>
+
+        <div className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            id="showName"
+            checked={showName}
+            onChange={(e) => setShowName(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-cobalt-600 focus:ring-cobalt-500"
+          />
+          <label htmlFor="showName" className="text-sm text-gray-700">
+            Show my name on the schedule
+            <span className="block text-xs text-gray-500">
+              Uncheck to appear as &quot;Booked&quot; instead. The host can always see your name.
+            </span>
+          </label>
         </div>
 
         <div className="flex gap-3 pt-2">
